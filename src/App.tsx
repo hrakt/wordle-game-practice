@@ -1,0 +1,239 @@
+/*
+README
+- Install: npm install
+- Run dev server: npm run dev
+- Build: npm run build
+*/
+import { useCallback, useEffect, useMemo, useState } from "react";
+import Grid from "./components/Grid";
+import Keyboard from "./components/Keyboard";
+
+const WORD_LENGTH = 5;
+const MAX_ATTEMPTS = 6;
+
+const WORDS = [
+  "ALIVE",
+  "BRAVE",
+  "CHAIR",
+  "CLOUD",
+  "CRANE",
+  "DANCE",
+  "DRIVE",
+  "EAGER",
+  "FAITH",
+  "FLARE",
+  "GRACE",
+  "HEART",
+  "KNOCK",
+  "LIGHT",
+  "MIGHT",
+  "NOBLE",
+  "OCEAN",
+  "PRIDE",
+  "QUIET",
+  "ROAST",
+  "SHELF",
+  "SHINE",
+  "SMILE",
+  "STORM",
+  "TRAIL",
+  "UNION",
+  "VIVID",
+  "WATER",
+  "YOUTH",
+  "ZEBRA"
+];
+
+export type GameState = "playing" | "won" | "lost";
+export type LetterStatus = "correct" | "present" | "absent" | "empty";
+export type KeyStatus = "correct" | "present" | "absent" | "unused";
+
+const pickWord = (): string => {
+  const index = Math.floor(Math.random() * WORDS.length);
+  return WORDS[index];
+};
+
+const getStatuses = (guess: string, target: string): LetterStatus[] => {
+  const result: LetterStatus[] = Array.from({ length: WORD_LENGTH }, () => "absent");
+  const remaining: Record<string, number> = {};
+
+  for (let i = 0; i < WORD_LENGTH; i += 1) {
+    const g = guess[i];
+    const t = target[i];
+    if (g === t) {
+      result[i] = "correct";
+    } else {
+      remaining[t] = (remaining[t] ?? 0) + 1;
+    }
+  }
+
+  for (let i = 0; i < WORD_LENGTH; i += 1) {
+    if (result[i] === "correct") {
+      continue;
+    }
+    const g = guess[i];
+    if (remaining[g] && remaining[g] > 0) {
+      result[i] = "present";
+      remaining[g] -= 1;
+    }
+  }
+
+  return result;
+};
+
+const statusRank: Record<KeyStatus, number> = {
+  unused: 0,
+  absent: 1,
+  present: 2,
+  correct: 3
+};
+
+const App = () => {
+  const [targetWord, setTargetWord] = useState<string>(pickWord());
+  const [guesses, setGuesses] = useState<string[]>([]);
+  const [currentGuess, setCurrentGuess] = useState<string>("");
+  const [gameState, setGameState] = useState<GameState>("playing");
+  const [shortEntry, setShortEntry] = useState(false);
+
+  const keyStatuses = useMemo<Record<string, KeyStatus>>(() => {
+    const map: Record<string, KeyStatus> = {};
+    guesses.forEach((guess) => {
+      const statuses = getStatuses(guess, targetWord);
+      for (let i = 0; i < guess.length; i += 1) {
+        const letter = guess[i];
+        const nextStatus = statuses[i] as KeyStatus;
+        const currentStatus = map[letter] ?? "unused";
+        if (statusRank[nextStatus] > statusRank[currentStatus]) {
+          map[letter] = nextStatus;
+        }
+      }
+    });
+    return map;
+  }, [guesses, targetWord]);
+
+  const rows = useMemo(() => {
+    return Array.from({ length: MAX_ATTEMPTS }, (_, rowIndex) => {
+      if (rowIndex < guesses.length) {
+        const guess = guesses[rowIndex];
+        return {
+          letters: guess,
+          statuses: getStatuses(guess, targetWord),
+          isActive: false
+        };
+      }
+      if (rowIndex === guesses.length) {
+        return {
+          letters: currentGuess,
+          statuses: Array.from({ length: WORD_LENGTH }, () => "empty" as LetterStatus),
+          isActive: true
+        };
+      }
+      return {
+        letters: "",
+        statuses: Array.from({ length: WORD_LENGTH }, () => "empty" as LetterStatus),
+        isActive: false
+      };
+    });
+  }, [currentGuess, guesses, targetWord]);
+
+  const submitGuess = useCallback(() => {
+    if (currentGuess.length < WORD_LENGTH) {
+      setShortEntry(true);
+    }
+    if (currentGuess.length !== WORD_LENGTH || gameState !== "playing") {
+      return;
+    }
+    const nextGuesses = [...guesses, currentGuess];
+    setGuesses(nextGuesses);
+    if (currentGuess === targetWord) {
+      setGameState("won");
+    } else if (nextGuesses.length >= MAX_ATTEMPTS) {
+      setGameState("lost");
+    }
+    setCurrentGuess("");
+  }, [currentGuess, gameState, guesses, targetWord]);
+
+  const handleInput = useCallback(
+    (value: string) => {
+      if (gameState !== "playing") {
+        return;
+      }
+      if (value === "ENTER") {
+        submitGuess();
+        return;
+      }
+      if (value === "BACKSPACE") {
+        setCurrentGuess((prev) => prev.slice(0, -1));
+        return;
+      }
+      if (/^[A-Z]$/.test(value) && currentGuess.length < WORD_LENGTH) {
+        setCurrentGuess((prev) => prev + value);
+      }
+    },
+    [currentGuess.length, gameState, submitGuess]
+  );
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      const key = event.key;
+      if (key === "Enter") {
+        handleInput("ENTER");
+      } else if (key === "Backspace") {
+        handleInput("BACKSPACE");
+      } else if (/^[a-zA-Z]$/.test(key)) {
+        handleInput(key.toUpperCase());
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [handleInput]);
+
+  useEffect(() => {
+    if (!shortEntry) {
+      return;
+    }
+    const id = setTimeout(() => {
+      setShortEntry(false)
+    }, 3000)
+    return () => window.clearTimeout(id);
+  }, [shortEntry])
+
+  const resetGame = () => {
+    setTargetWord(pickWord());
+    setGuesses([]);
+    setCurrentGuess("");
+    setGameState("playing");
+  };
+
+  return (
+    <div className="app">
+      <header className="header">
+        {shortEntry ? <div className="error">Please enter 5 character guess</div> : ''}
+        <div className="badge">Mini Wordle</div>
+        <h1>Guess the 5-letter word</h1>
+        <p className="subtitle">Six tries. Smart hints. No pressure.</p>
+      </header>
+
+      <Grid rows={rows} />
+
+      <div className="status-bar">
+        {gameState === "playing" && (
+          <span className="message">Type a word and press Enter.</span>
+        )}
+        {gameState === "won" && (
+          <span className="message win">You won! The word was {targetWord}.</span>
+        )}
+        {gameState === "lost" && (
+          <span className="message loss">You lost. The word was {targetWord}.</span>
+        )}
+        <button className="new-game" type="button" onClick={resetGame}>
+          New Game
+        </button>
+      </div>
+
+      <Keyboard onKeyPress={handleInput} keyStatuses={keyStatuses} />
+    </div>
+  );
+};
+
+export default App;

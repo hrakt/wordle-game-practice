@@ -1,0 +1,249 @@
+@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&display=swap");
+
+:root {
+  color-scheme: light;
+  font-family: "Space Grotesk", sans-serif;
+  --bg: #f5efe6;
+  --bg-accent: #e1d9cd;
+  --ink: #1b1b1b;
+  --muted: #5b5b5b;
+  --tile: #fefbf6;
+  --tile-border: #c2b8aa;
+  --correct: #2e7d32;
+  --present: #f9a825;
+  --absent: #6f6f6f;
+  --accent: #0e7c86;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: radial-gradient(circle at top, #fff5e6 0%, var(--bg) 45%, var(--bg-accent) 100%);
+  color: var(--ink);
+  min-height: 100vh;
+}
+
+#root {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.app {
+  width: min(720px, 100%);
+  display: grid;
+  gap: 24px;
+  justify-items: center;
+  text-align: center;
+}
+
+.header {
+  display: grid;
+  gap: 8px;
+}
+
+.badge {
+  justify-self: center;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 12px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+h1 {
+  margin: 0;
+  font-size: clamp(26px, 4vw, 38px);
+  letter-spacing: 1px;
+}
+
+.subtitle {
+  margin: 0;
+  color: var(--muted);
+}
+
+.grid {
+  display: grid;
+  gap: 10px;
+  padding: 18px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.7);
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.08);
+  animation: fadeIn 600ms ease-out;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(48px, 1fr));
+  gap: 8px;
+}
+
+.tile {
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  font-weight: 700;
+  text-transform: uppercase;
+  background: var(--tile);
+  border: 2px solid var(--tile-border);
+  border-radius: 12px;
+  transition: transform 160ms ease, background 200ms ease, border 200ms ease, color 200ms ease;
+}
+
+.row.active .tile {
+  box-shadow: inset 0 0 0 1px rgba(14, 124, 134, 0.2);
+}
+
+.tile.correct {
+  background: var(--correct);
+  border-color: var(--correct);
+  color: #fff;
+}
+
+.tile.present {
+  background: var(--present);
+  border-color: var(--present);
+  color: #fff;
+}
+
+.tile.absent {
+  background: var(--absent);
+  border-color: var(--absent);
+  color: #fff;
+}
+
+.status-bar {
+  display: grid;
+  gap: 12px;
+  justify-items: center;
+}
+
+.message {
+  font-weight: 600;
+}
+
+.message.win {
+  color: var(--correct);
+}
+
+.message.loss {
+  color: #b33a3a;
+}
+
+.new-game {
+  border: none;
+  border-radius: 999px;
+  padding: 10px 18px;
+  font-weight: 600;
+  background: var(--accent);
+  color: #fff;
+  cursor: pointer;
+  transition: transform 160ms ease, box-shadow 160ms ease;
+}
+
+.new-game:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(14, 124, 134, 0.25);
+}
+
+.keyboard {
+  display: grid;
+  gap: 10px;
+  width: 100%;
+  animation: rise 700ms ease-out;
+}
+
+.key-row {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+.key {
+  flex: 1;
+  max-width: 44px;
+  border: none;
+  border-radius: 10px;
+  padding: 12px 0;
+  background: #fff;
+  color: var(--ink);
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 120ms ease, background 160ms ease, color 160ms ease;
+}
+
+.key.wide {
+  flex: 1.4;
+  max-width: 88px;
+}
+
+.key.correct {
+  background: var(--correct);
+  color: #fff;
+}
+
+.key.present {
+  background: var(--present);
+  color: #fff;
+}
+
+.key.absent {
+  background: #9a9a9a;
+  color: #fff;
+}
+
+.key:active {
+  transform: translateY(1px);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 600px) {
+  .grid {
+    padding: 14px;
+  }
+
+  .tile {
+    height: 48px;
+    font-size: 18px;
+  }
+
+  .key {
+    max-width: 36px;
+    padding: 10px 0;
+    font-size: 12px;
+  }
+
+  .key.wide {
+    max-width: 72px;
+  }
+}

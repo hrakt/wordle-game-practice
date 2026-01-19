@@ -1,9 +1,3 @@
-/*
-README
-- Install: npm install
-- Run dev server: npm run dev
-- Build: npm run build
-*/
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Grid from "./components/Grid";
 import Keyboard from "./components/Keyboard";
@@ -94,6 +88,7 @@ const App = () => {
   const [currentGuess, setCurrentGuess] = useState<string>("");
   const [gameState, setGameState] = useState<GameState>("playing");
   const [shortEntry, setShortEntry] = useState(false);
+  const [isShake, setIsShake] = useState(false)
 
   const keyStatuses = useMemo<Record<string, KeyStatus>>(() => {
     const map: Record<string, KeyStatus> = {};
@@ -118,27 +113,31 @@ const App = () => {
         return {
           letters: guess,
           statuses: getStatuses(guess, targetWord),
-          isActive: false
+          isActive: false,
+          shakeRow: false
         };
       }
       if (rowIndex === guesses.length) {
         return {
           letters: currentGuess,
           statuses: Array.from({ length: WORD_LENGTH }, () => "empty" as LetterStatus),
-          isActive: true
+          isActive: true,
+          shakeRow: isShake
         };
       }
       return {
         letters: "",
         statuses: Array.from({ length: WORD_LENGTH }, () => "empty" as LetterStatus),
-        isActive: false
+        isActive: false,
+        shakeRow: false
       };
     });
-  }, [currentGuess, guesses, targetWord]);
+  }, [currentGuess, guesses, targetWord, isShake]);
 
   const submitGuess = useCallback(() => {
-    if (currentGuess.length < WORD_LENGTH) {
+    if (currentGuess.length < WORD_LENGTH && currentGuess.length !== 0) {
       setShortEntry(true);
+      setIsShake(true)
     }
     if (currentGuess.length !== WORD_LENGTH || gameState !== "playing") {
       return;
@@ -195,8 +194,21 @@ const App = () => {
     const id = setTimeout(() => {
       setShortEntry(false)
     }, 3000)
-    return () => window.clearTimeout(id);
+    return () => {
+      window.clearTimeout(id)
+    };
   }, [shortEntry])
+  useEffect(() => {
+    if (!isShake) {
+      return;
+    }
+    const id = setTimeout(() => {
+      setIsShake(false)
+    }, 300)
+    return () => {
+      window.clearTimeout(id)
+    };
+  }, [isShake])
 
   const resetGame = () => {
     setTargetWord(pickWord());

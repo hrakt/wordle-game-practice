@@ -5,6 +5,7 @@ export type RowData = {
   letters: string;
   statuses: LetterStatus[];
   isActive: boolean;
+  shakeRow: boolean;
 };
 
 type GridProps = {
@@ -20,6 +21,7 @@ const Grid = ({ rows }: GridProps) => {
           letters={row.letters}
           statuses={row.statuses}
           isActive={row.isActive}
+          shakeRow={row.shakeRow}
         />
       ))}
     </div>

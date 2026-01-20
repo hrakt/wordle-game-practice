@@ -60,6 +60,8 @@ const App = () => {
   const [hardMode, setHardMode] = useState(false);
   const [hardModeMessage, setHardModeMessage] = useState(false);
   const [activeKey, setActiveKey] = useState<string | null>(null)
+  const [timerMode, setTimerMode] = useState(false);
+  const [timer, setTimer] = useState(0);
 
   const keyStatuses = useMemo<Record<string, KeyStatus>>(() => {
     const map: Record<string, KeyStatus> = {};
@@ -229,6 +231,19 @@ const App = () => {
     };
   }, [hardModeMessage])
 
+  useEffect(() => {
+    if (!timerMode) {
+      setTimer(0);
+      return;
+    }
+    const id = setInterval(() => {
+      setTimer((prev) => prev + 1)
+    }, 1000)
+    return () => {
+      window.clearInterval(id)
+    };
+  }, [timerMode])
+
   const resetGame = () => {
     setTargetWord(pickWord());
     setGuesses([]);
@@ -241,6 +256,16 @@ const App = () => {
       <header className="header">
         {shortEntry ? <div className="error">Please enter 5 character guess</div> : ''}
         {hardModeMessage ? <div className="error">Please match the correct letters from the last guess and include all the pesent guesses</div> : ''}
+
+        {timerMode && <div>{timer}</div>}
+
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px' }}>
+          <span>Timer Mode</span>
+          <label className="switch">
+            <input type="checkbox" checked={timerMode} onChange={(e) => setTimerMode(e.target.checked)} />
+            <span className="slider round"></span>
+          </label>
+        </div>
 
 
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px' }}>

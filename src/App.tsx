@@ -276,7 +276,7 @@ const App = () => {
 
         {timerMode && (
           <div>
-            <span>{timer}</span>
+            <span>{Math.floor(timer / 60)} : {timer % 60} </span>
             <button onClick={() => setTimer(0)}>Reset</button>
           </div>
         )}

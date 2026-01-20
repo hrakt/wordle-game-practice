@@ -88,7 +88,8 @@ const App = () => {
   const [currentGuess, setCurrentGuess] = useState<string>("");
   const [gameState, setGameState] = useState<GameState>("playing");
   const [shortEntry, setShortEntry] = useState(false);
-  const [isShake, setIsShake] = useState(false)
+  const [isShake, setIsShake] = useState(false);
+  const [hardMode, setHardMode] = useState(false);
 
   const keyStatuses = useMemo<Record<string, KeyStatus>>(() => {
     const map: Record<string, KeyStatus> = {};
@@ -134,10 +135,37 @@ const App = () => {
     });
   }, [currentGuess, guesses, targetWord, isShake]);
 
+  const checkHardMode = useCallback(() => {
+    if (guesses.length === 0) return true;
+    const lastGuess = guesses[guesses.length - 1];
+    const lastStatuses = getStatuses(lastGuess, targetWord);
+    let requiredLetters: string[] = [];
+    for (let i = 0; i < WORD_LENGTH; i++) {
+      if (lastStatuses[i] === "present") {
+        requiredLetters.push(lastGuess[i])
+      }
+    }
+
+    for (let i = 0; i < WORD_LENGTH; i++) {
+      const idx = requiredLetters.indexOf(currentGuess[i]);
+      if (idx !== -1) requiredLetters.splice(idx, 1);
+      // if (lastStatuses[i])
+    }
+
+    if (requiredLetters.length > 0) {
+      return false
+    }
+
+    return true;
+  }, [guesses, currentGuess, targetWord])
+
   const submitGuess = useCallback(() => {
     if (currentGuess.length < WORD_LENGTH && currentGuess.length !== 0) {
       setShortEntry(true);
       setIsShake(true)
+    }
+    if (hardMode && !checkHardMode()) {
+      return;
     }
     if (currentGuess.length !== WORD_LENGTH || gameState !== "playing") {
       return;
@@ -150,7 +178,7 @@ const App = () => {
       setGameState("lost");
     }
     setCurrentGuess("");
-  }, [currentGuess, gameState, guesses, targetWord]);
+  }, [currentGuess, gameState, guesses, targetWord, checkHardMode, hardMode]);
 
   const handleInput = useCallback(
     (value: string) => {
@@ -220,6 +248,13 @@ const App = () => {
   return (
     <div className="app">
       <header className="header">
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px' }}>
+          <span>Hard Mode</span>
+          <label className="switch">
+            <input type="checkbox" checked={hardMode} onChange={(e) => setHardMode(e.target.checked)} />
+            <span className="slider round"></span>
+          </label>
+        </div>
         {shortEntry ? <div className="error">Please enter 5 character guess</div> : ''}
         <div className="badge">Mini Wordle</div>
         <h1>Guess the 5-letter word</h1>

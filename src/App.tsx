@@ -90,6 +90,7 @@ const App = () => {
   const [shortEntry, setShortEntry] = useState(false);
   const [isShake, setIsShake] = useState(false);
   const [hardMode, setHardMode] = useState(false);
+  const [hardModeMessage, setHardModeMessage] = useState(false);
 
   const keyStatuses = useMemo<Record<string, KeyStatus>>(() => {
     const map: Record<string, KeyStatus> = {};
@@ -149,9 +150,10 @@ const App = () => {
     for (let i = 0; i < WORD_LENGTH; i++) {
       const idx = requiredLetters.indexOf(currentGuess[i]);
       if (idx !== -1) requiredLetters.splice(idx, 1);
-      // if (lastStatuses[i])
+      if (lastStatuses[i] === 'correct' && lastGuess[i] !== currentGuess[i]) {
+        return false
+      }
     }
-
     if (requiredLetters.length > 0) {
       return false
     }
@@ -165,7 +167,8 @@ const App = () => {
       setIsShake(true)
     }
     if (hardMode && !checkHardMode()) {
-      return;
+      setHardModeMessage(true)
+      return
     }
     if (currentGuess.length !== WORD_LENGTH || gameState !== "playing") {
       return;
@@ -237,6 +240,17 @@ const App = () => {
       window.clearTimeout(id)
     };
   }, [isShake])
+  useEffect(() => {
+    if (!hardModeMessage) {
+      return;
+    }
+    const id = setTimeout(() => {
+      setHardModeMessage(false)
+    }, 1000)
+    return () => {
+      window.clearTimeout(id)
+    };
+  }, [hardModeMessage])
 
   const resetGame = () => {
     setTargetWord(pickWord());
@@ -248,6 +262,10 @@ const App = () => {
   return (
     <div className="app">
       <header className="header">
+        {shortEntry ? <div className="error">Please enter 5 character guess</div> : ''}
+        {hardModeMessage ? <div className="error">Please match the correct letters from the last guess and include all the pesent guesses</div> : ''}
+
+
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px' }}>
           <span>Hard Mode</span>
           <label className="switch">
@@ -255,7 +273,7 @@ const App = () => {
             <span className="slider round"></span>
           </label>
         </div>
-        {shortEntry ? <div className="error">Please enter 5 character guess</div> : ''}
+
         <div className="badge">Mini Wordle</div>
         <h1>Guess the 5-letter word</h1>
         <p className="subtitle">Six tries. Smart hints. No pressure.</p>

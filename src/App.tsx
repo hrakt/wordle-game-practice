@@ -62,6 +62,7 @@ const App = () => {
   const [activeKey, setActiveKey] = useState<string | null>(null)
   const [timerMode, setTimerMode] = useState(false);
   const [timer, setTimer] = useState(0);
+  const [apiWord, setApiWord] = useState<string>("")
 
   const keyStatuses = useMemo<Record<string, KeyStatus>>(() => {
     const map: Record<string, KeyStatus> = {};
@@ -196,6 +197,22 @@ const App = () => {
       window.removeEventListener("keyup", onKeyUp);
     }
   }, [handleInput]);
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const res = await fetch('https://random-word-api.herokuapp.com/word');
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const json = await res.json();
+        setApiWord(json[0])
+        debugger
+
+      } catch (err) {
+        console.error(err)
+      }
+    }
+    load();
+  }, [])
 
   useEffect(() => {
     if (!shortEntry) {

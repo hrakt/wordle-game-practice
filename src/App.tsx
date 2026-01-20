@@ -274,7 +274,12 @@ const App = () => {
         {shortEntry ? <div className="error">Please enter 5 character guess</div> : ''}
         {hardModeMessage ? <div className="error">Please match the correct letters from the last guess and include all the pesent guesses</div> : ''}
 
-        {timerMode && <div>{timer}</div>}
+        {timerMode && (
+          <div>
+            <span>{timer}</span>
+            <button onClick={() => setTimer(0)}>Reset</button>
+          </div>
+        )}
 
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px' }}>
           <span>Timer Mode</span>

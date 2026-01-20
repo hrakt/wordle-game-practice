@@ -299,6 +299,11 @@ input:checked+.slider:before {
   transform: translateY(1px);
 }
 
+.key.pressed {
+  background-color: #0e7c86;
+  color: white;
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;

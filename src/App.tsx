@@ -1,42 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Grid from "./components/Grid";
 import Keyboard from "./components/Keyboard";
+import { WORDS } from "./words";
 
 const WORD_LENGTH = 5;
 const MAX_ATTEMPTS = 6;
-
-const WORDS = [
-  "ALIVE",
-  "BRAVE",
-  "CHAIR",
-  "CLOUD",
-  "CRANE",
-  "DANCE",
-  "DRIVE",
-  "EAGER",
-  "FAITH",
-  "FLARE",
-  "GRACE",
-  "HEART",
-  "KNOCK",
-  "LIGHT",
-  "MIGHT",
-  "NOBLE",
-  "OCEAN",
-  "PRIDE",
-  "QUIET",
-  "ROAST",
-  "SHELF",
-  "SHINE",
-  "SMILE",
-  "STORM",
-  "TRAIL",
-  "UNION",
-  "VIVID",
-  "WATER",
-  "YOUTH",
-  "ZEBRA"
-];
 
 export type GameState = "playing" | "won" | "lost";
 export type LetterStatus = "correct" | "present" | "absent" | "empty";
@@ -91,6 +59,7 @@ const App = () => {
   const [isShake, setIsShake] = useState(false);
   const [hardMode, setHardMode] = useState(false);
   const [hardModeMessage, setHardModeMessage] = useState(false);
+  const [activeKey, setActiveKey] = useState<string | null>(null)
 
   const keyStatuses = useMemo<Record<string, KeyStatus>>(() => {
     const map: Record<string, KeyStatus> = {};
@@ -206,6 +175,7 @@ const App = () => {
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       const key = event.key;
+      setActiveKey(key)
       if (key === "Enter") {
         handleInput("ENTER");
       } else if (key === "Backspace") {
@@ -214,8 +184,15 @@ const App = () => {
         handleInput(key.toUpperCase());
       }
     };
+    const onKeyUp = (event: KeyboardEvent) => {
+      setActiveKey(null)
+    }
     window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
+    window.addEventListener("keyup", onKeyUp);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("keyup", onKeyUp);
+    }
   }, [handleInput]);
 
   useEffect(() => {
@@ -296,7 +273,7 @@ const App = () => {
         </button>
       </div>
 
-      <Keyboard onKeyPress={handleInput} keyStatuses={keyStatuses} />
+      <Keyboard onKeyPress={handleInput} keyStatuses={keyStatuses} activeKey={activeKey} />
     </div>
   );
 };

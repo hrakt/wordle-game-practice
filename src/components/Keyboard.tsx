@@ -1,8 +1,10 @@
+import { useEffect, useState } from "react";
 import type { KeyStatus } from "../App";
 
 type KeyboardProps = {
   onKeyPress: (value: string) => void;
   keyStatuses: Record<string, KeyStatus>;
+  activeKey: string | null;
 };
 
 type KeyConfig = {
@@ -48,7 +50,10 @@ const KEY_ROWS: KeyConfig[][] = [
   ]
 ];
 
-const Keyboard = ({ onKeyPress, keyStatuses }: KeyboardProps) => {
+const Keyboard = ({ onKeyPress, keyStatuses, activeKey }: KeyboardProps) => {
+  useEffect(() => {
+    console.log(activeKey)
+  }, [activeKey])
   return (
     <div className="keyboard">
       {KEY_ROWS.map((row, rowIndex) => (
@@ -59,7 +64,7 @@ const Keyboard = ({ onKeyPress, keyStatuses }: KeyboardProps) => {
               <button
                 key={key.value}
                 type="button"
-                className={`key ${status} ${key.wide ? "wide" : ""}`.trim()}
+                className={`key ${status} ${key.wide ? "wide" : ""} ${activeKey?.toUpperCase() == key.label ? "pressed" : ""}`.trim()}
                 onClick={() => onKeyPress(key.value)}
               >
                 {key.label}
